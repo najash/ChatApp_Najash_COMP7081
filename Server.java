@@ -11,6 +11,9 @@ public class Server {
 	private static int uniqueId;
 	// an ArrayList to keep the list of the Client
 	private ArrayList<ClientThread> al;
+        
+        private ArrayList<ClientThread> approveList;
+        
 	// if I am in a GUI
 	private ServerGUI sg;
 	// to display time
@@ -38,6 +41,7 @@ public class Server {
 		sdf = new SimpleDateFormat("HH:mm:ss");
 		// ArrayList for the Client list
 		al = new ArrayList<ClientThread>();
+                approveList = new ArrayList<ClientThread>();
 	}
 	
 	public void start() {
@@ -58,9 +62,20 @@ public class Server {
 				// if I was asked to stop
 				if(!keepGoing)
 					break;
-				ClientThread t = new ClientThread(socket);  // make a thread of it
-				al.add(t);									// save it in the ArrayList
-				t.start();
+				
+                                if (al.size() > 1) {
+                                    ClientThread admin = al.get(0);
+                                    ClientThread t = new ClientThread(socket);  // make a thread of it
+                                    approveList.add(t);
+                                    
+                                    admin.writeMsg("<~>" + t.username + "</>" + approveList.indexOf(t));
+                                } else {
+                                    ClientThread t = new ClientThread(socket);  // make a thread of it
+                                    al.add(t);									// save it in the ArrayList
+                                    t.start();
+                                }
+                                
+				
 			}
 			// I was asked to stop
 			try {
@@ -83,7 +98,7 @@ public class Server {
 		}
 		// something went bad
 		catch (IOException e) {
-            String msg = sdf.format(new Date()) + " Exception on new ServerSocket: " + e + "\n";
+                        String msg = sdf.format(new Date()) + " Exception on new ServerSocket: " + e + "\n";
 			display(msg);
 		}
 	}		
@@ -221,7 +236,7 @@ public class Server {
 			}
             date = new Date().toString() + "\n";
 		}
-
+                
 		// what will run forever
 		public void run() {
 			// to loop until LOGOUT
@@ -243,9 +258,17 @@ public class Server {
 
 				// Switch on the type of message receive
 				switch(cm.getType()) {
-
+                                case ChatMessage.APPROVE:
+                                        if (message.substring(0, 3).equals("<y>")) {
+                                            int index = Integer.parseInt(message.substring(3));
+                                            ClientThread t = approveList.get(index);  // make a thread of it
+                                            al.add(t);									// save it in the ArrayList
+                                            t.start();
+                                        }
+                                    
+                                        break;
 				case ChatMessage.MESSAGE:
-					broadcast(username + ": " + message);
+                                        broadcast(username + ": " + message);
 					break;
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");

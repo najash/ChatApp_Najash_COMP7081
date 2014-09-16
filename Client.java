@@ -2,6 +2,7 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import javax.swing.JOptionPane;
 
 /*
  * The Client that can be run both as a console or a GUI
@@ -225,6 +226,19 @@ public class Client  {
 			while(true) {
 				try {
 					String msg = (String) sInput.readObject();
+                                        
+                                        if (msg.substring(0, 3).equals("<~>")) {
+                                            String user;
+                                            user = msg.substring(3, msg.lastIndexOf("</>"));
+                                            String index = msg.substring(msg.lastIndexOf("</>"));
+                                            int result;
+                                            result = JOptionPane.showConfirmDialog(null, "Add " + user + " to Chat?");
+                                            
+                                            if (result == JOptionPane.YES_OPTION) {
+                                                sendMessage(new ChatMessage(ChatMessage.APPROVE, "<y>" + index));
+                                            }
+                                        }
+                                        
 					// if console mode print the message and add back the prompt
 					if(cg == null) {
 						System.out.println(msg);
