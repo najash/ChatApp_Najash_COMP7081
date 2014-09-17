@@ -63,16 +63,17 @@ public class Server {
 				if(!keepGoing)
 					break;
 				
-                                if (al.size() > 1) {
+                                if (al.size() == 0) { //first user that connects is the admin
+                                    ClientThread admin = new ClientThread(socket);  // make an admin thread of it
+                                    al.add(admin);									// save it in the ArrayList
+                                    admin.start();
+                                } else {
                                     ClientThread admin = al.get(0);
                                     ClientThread t = new ClientThread(socket);  // make a thread of it
                                     approveList.add(t);
                                     
-                                    admin.writeMsg("<~>" + t.username + "</>" + approveList.indexOf(t));
-                                } else {
-                                    ClientThread t = new ClientThread(socket);  // make a thread of it
-                                    al.add(t);									// save it in the ArrayList
-                                    t.start();
+                                    t.writeMsg("Waiting for admin approval of your account.\n");
+                                    admin.writeMsg("<~>" + t.username + "</>" + approveList.indexOf(t)); //ask admin if to add the user
                                 }
                                 
 				
@@ -259,11 +260,19 @@ public class Server {
 				// Switch on the type of message receive
 				switch(cm.getType()) {
                                 case ChatMessage.APPROVE:
-                                        if (message.substring(0, 3).equals("<y>")) {
+                                        if (message.substring(0, 3).equals("<y>")) { //user was approved by admin
                                             int index = Integer.parseInt(message.substring(3));
-                                            ClientThread t = approveList.get(index);  // make a thread of it
-                                            al.add(t);									// save it in the ArrayList
+                                            ClientThread t = approveList.get(index);  // get the client thread that was approved by admin
+                                            al.add(t);	
                                             t.start();
+                                        } else if (message.substring(0, 3).equals("<n>")) { //user was not approved by admin
+                                            int index = Integer.parseInt(message.substring(3));
+                                            ClientThread t = approveList.get(index);  // get the client thread that was approved by admin
+                                            t.writeMsg("Admin did not approve your account.\n");
+                                            t.writeMsg("You were disconnected from the server.\n");
+                                            display(t.username + " was disconnected by admin.");
+                                            t.close();
+                                            approveList.remove(index);
                                         }
                                     
                                         break;
