@@ -18,7 +18,7 @@ public class Client  {
 	private ClientGUI cg;
 	
 	// the server, the port and the username
-	private String server, username;
+	private String server, username, password;
 	private int port;
 
 	/*
@@ -26,20 +26,22 @@ public class Client  {
 	 *  server: the server address
 	 *  port: the port number
 	 *  username: the username
+         *  password: the password
 	 */
-	Client(String server, int port, String username) {
+	Client(String server, int port, String username, String password) {
 		// which calls the common constructor with the GUI set to null
-		this(server, port, username, null);
+		this(server, port, username, password, null);
 	}
 
 	/*
 	 * Constructor call when used from a GUI
 	 * in console mode the ClienGUI parameter is null
 	 */
-	Client(String server, int port, String username, ClientGUI cg) {
+	Client(String server, int port, String username, String password, ClientGUI cg) {
 		this.server = server;
 		this.port = port;
 		this.username = username;
+                this.password = password;
 		// save if we are in GUI mode or not
 		this.cg = cg;
 	}
@@ -74,11 +76,13 @@ public class Client  {
 
 		// creates the Thread to listen from the server 
 		new ListenFromServer().start();
-		// Send our username to the server this is the only message that we
+		// Send our username/password to the server this is the only message that we
 		// will send as a String. All other messages will be ChatMessage objects
 		try
 		{
 			sOutput.writeObject(username);
+                        sOutput.writeObject(password);
+                        
 		}
 		catch (IOException eIO) {
 			display("Exception doing login : " + eIO);
@@ -88,7 +92,6 @@ public class Client  {
 		// success we inform the caller that it worked
 		return true;
 	}
-
 	/*
 	 * To send a message to the console or the GUI
 	 */
@@ -157,7 +160,7 @@ public class Client  {
 		int portNumber = 1500;
 		String serverAddress = "localhost";
 		String userName = "Anonymous";
-
+                String passWord = "bla";
 		// depending of the number of arguments provided we fall through
 		switch(args.length) {
 			// > javac Client username portNumber serverAddr
@@ -170,22 +173,23 @@ public class Client  {
 				}
 				catch(Exception e) {
 					System.out.println("Invalid port number.");
-					System.out.println("Usage is: > java Client [username] [portNumber] [serverAddress]");
+					System.out.println("Usage is: > java Client [username] [password] [portNumber] [serverAddress]");
 					return;
 				}
 			// > javac Client username
 			case 1: 
 				userName = args[0];
+                                passWord = args[1];
 			// > java Client
 			case 0:
 				break;
 			// invalid number of arguments
 			default:
-				System.out.println("Usage is: > java Client [username] [portNumber] {serverAddress]");
+				System.out.println("Usage is: > java Client [username] [password] [portNumber] {serverAddress]");
 			return;
 		}
 		// create the Client object
-		Client client = new Client(serverAddress, portNumber, userName);
+		Client client = new Client(serverAddress, portNumber, userName, passWord);
 		// test if we can start the connection to the Server
 		// if it failed nothing we can do
 		if(!client.start())
@@ -225,31 +229,17 @@ public class Client  {
 		public void run() {
 			while(true) {
 				try {
-					String msg = (String) sInput.readObject();
+                                    String msg = (String) sInput.readObject();
+                                    // if console mode print the message and add back the prompt
+                                    if(cg == null) {
+                                            System.out.println(msg);
+                                            System.out.print("> ");
+                                    }
+                                    else 
+                                    {
+                                            cg.append(msg);
+                                    }
                                         
-                                        if (msg.substring(0, 3).equals("<~>")) { //check if the message is for the admin
-                                            String user;
-                                            user = msg.substring(3, msg.lastIndexOf("</>"));
-                                            String index = msg.substring(msg.lastIndexOf("</>") + 3);
-                                            int result;
-                                            result = JOptionPane.showConfirmDialog(cg, "Add " + user + " to Chat?", 
-                                                    "Add User", JOptionPane.YES_NO_OPTION); //ask admin if add given user
-                                            
-                                            if (result == JOptionPane.YES_OPTION) {
-                                                sendMessage(new ChatMessage(ChatMessage.APPROVE, "<y>" + index));
-                                            } else {
-                                                sendMessage(new ChatMessage(ChatMessage.APPROVE, "<n>" + index));
-                                            }
-                                        } else {
-                                            // if console mode print the message and add back the prompt
-                                            if(cg == null) {
-                                                    System.out.println(msg);
-                                                    System.out.print("> ");
-                                            }
-                                            else {
-                                                    cg.append(msg);
-                                            }
-                                        }
 				}
 				catch(IOException e) {
 					display("Server has close the connection: " + e);
