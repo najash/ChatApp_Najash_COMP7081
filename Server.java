@@ -277,8 +277,21 @@ public class Server {
                                     
                                         break;
 				case ChatMessage.MESSAGE:
+                                {
+                                    if(message.startsWith("/"))
+                                    {
+                                        //separate function to avoid messy code
+                                        CommandLine cmdLine = new CommandLine(message);
+                                        if(!cmdLine.parseCMD())
+                                        {
+                                            //invalid command
+                                        }
+                                    }
+                                    else
                                         broadcast(username + ": " + message);
-					break;
+                                    
+                                    break;
+                                }
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");
 					keepGoing = false;
@@ -299,6 +312,7 @@ public class Server {
 			close();
 		}
 		
+                
 		// try to close everything
 		private void close() {
 			// try to close the connection
