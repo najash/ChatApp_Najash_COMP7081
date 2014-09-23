@@ -11,8 +11,7 @@ public class Server {
 	private static int uniqueId;
 	// an ArrayList to keep the list of the Client
 	private ArrayList<ClientThread> al;
-        
-        private ArrayList<ClientThread> approveList;
+
         
 	// if I am in a GUI
 	private ServerGUI sg;
@@ -41,7 +40,7 @@ public class Server {
 		sdf = new SimpleDateFormat("HH:mm:ss");
 		// ArrayList for the Client list
 		al = new ArrayList<ClientThread>();
-                approveList = new ArrayList<ClientThread>();
+
 	}
 	
 	public void start() {
@@ -61,25 +60,20 @@ public class Server {
 				Socket socket = serverSocket.accept();  	// accept connection
 				// if I was asked to stop
 				if(!keepGoing)
-					break;
+                                    break;
 				
-                                if (al.size() == 0) { //first user that connects is the admin
-                                    ClientThread admin = new ClientThread(socket);  // make an admin thread of it
-                                    al.add(admin);									// save it in the ArrayList
-                                    admin.start();
-                                } else {
-                                    ClientThread admin = al.get(0);
-                                    ClientThread t = new ClientThread(socket);  // make a thread of it
-                                    approveList.add(t);
-                                    
-                                    t.writeMsg("Waiting for admin approval of your account.\n");
-                                    admin.writeMsg("<~>" + t.username + "</>" + approveList.indexOf(t)); //ask admin if to add the user
-                                }
+
+                                ClientThread t = new ClientThread(socket);  // make a thread of it
+
+                        //      if(t.password.equals(users.getPassword(t.username)) == null)
+                        //      {
+                        //          t.start();
+                        //      }
                                 
 				
 			}
 			// I was asked to stop
-			try {
+			try {   
 				serverSocket.close();
 				for(int i = 0; i < al.size(); ++i) {
 					ClientThread tc = al.get(i);
@@ -206,6 +200,7 @@ public class Server {
 		int id;
 		// the Username of the Client
 		String username;
+                String password;
 		// the only type of message a will receive
 		ChatMessage cm;
 		// the date I connect
@@ -225,6 +220,7 @@ public class Server {
 				sInput  = new ObjectInputStream(socket.getInputStream());
 				// read the username
 				username = (String) sInput.readObject();
+                                
 				display(username + " just connected.");
 			}
 			catch (IOException e) {
@@ -259,23 +255,7 @@ public class Server {
 
 				// Switch on the type of message receive
 				switch(cm.getType()) {
-                                case ChatMessage.APPROVE:
-                                        if (message.substring(0, 3).equals("<y>")) { //user was approved by admin
-                                            int index = Integer.parseInt(message.substring(3));
-                                            ClientThread t = approveList.get(index);  // get the client thread that was approved by admin
-                                            al.add(t);	
-                                            t.start();
-                                        } else if (message.substring(0, 3).equals("<n>")) { //user was not approved by admin
-                                            int index = Integer.parseInt(message.substring(3));
-                                            ClientThread t = approveList.get(index);  // get the client thread that was approved by admin
-                                            t.writeMsg("Admin did not approve your account.\n");
-                                            t.writeMsg("You were disconnected from the server.\n");
-                                            display(t.username + " was disconnected by admin.");
-                                            t.close();
-                                            approveList.remove(index);
-                                        }
-                                    
-                                        break;
+
 				case ChatMessage.MESSAGE:
                                 {
                                     if(message.startsWith("/"))
@@ -289,8 +269,7 @@ public class Server {
                                     }
                                     else
                                         broadcast(username + ": " + message);
-                                    
-                                    break;
+					break;
                                 }
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");
@@ -312,7 +291,6 @@ public class Server {
 			close();
 		}
 		
-                
 		// try to close everything
 		private void close() {
 			// try to close the connection
