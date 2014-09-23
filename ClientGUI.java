@@ -12,12 +12,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	// will first hold "Username:", later on "Enter message"
 	private JLabel label;
-        // label for password
-        private JLabel label2;
 	// to hold the Username and later on the messages
 	private JTextField tf;
-        //to hold the password
-        private JTextField tfPass;
 	// to hold the server address an the port number
 	private JTextField tfServer, tfPort;
 	// to Logout and get the list of the users
@@ -57,22 +53,13 @@ public class ClientGUI extends JFrame implements ActionListener {
 		northPanel.add(serverAndPort);
 
 		// the Label and the TextField
-		//label = new JLabel("Enter your username below", SwingConstants.LEFT);
-		//northPanel.add(label);
+		label = new JLabel("Enter your username below", SwingConstants.CENTER);
+		northPanel.add(label);
 		tf = new JTextField("Anonymous");
 		tf.setBackground(Color.WHITE);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
-                
-                // password 
-                //label2 = new JLabel("Enter password below", SwingConstants.CENTER);
-                //northPanel.add(label2);
-		tfPass = new JTextField("Password");
-		tfPass.setBackground(Color.WHITE);
-		northPanel.add(tfPass);
-		//add(northPanel, BorderLayout.NORTH);
-                
-                
+
 		// The CenterPanel which is the chat room
 		ta = new JTextArea("Welcome to the Chat room\n", 80, 80);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
@@ -114,7 +101,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		login.setEnabled(true);
 		logout.setEnabled(false);
 		whoIsIn.setEnabled(false);
-		//label.setText("Enter your username below");
+		label.setText("Enter your username below");
 		tf.setText("Anonymous");
 		// reset port number and host name as a construction time
 		tfPort.setText("" + defaultPort);
@@ -155,9 +142,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 		if(o == login) {
 			// ok it is a connection request
 			String username = tf.getText().trim();
-                        String password = tfPass.getText().trim();
-                        
-                        
 			// empty username ignore it
 			if(username.length() == 0)
 				return;
@@ -178,7 +162,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			}
 
 			// try creating a new Client with GUI
-			client = new Client(server, port, username, password, this);
+			client = new Client(server, port, username, this);
 			// test if we can start the Client
 			if(!client.start()) 
 				return;
