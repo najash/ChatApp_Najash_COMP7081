@@ -8,8 +8,8 @@
  * @author A00813191
  */
 public class CommandLine {
-    
     String[] parsedCMD;
+    Users users = new Users();
     
     public CommandLine()
     {
@@ -37,17 +37,22 @@ public class CommandLine {
         {
             case "add":
             {
-                //add database code
+                users.addUser(parsedCMD[1], parsedCMD[2], Users.UserType.valueOf(parsedCMD[3]));
                 return true;
             }
             case "delete":
             {
-                
+                users.deleteUser(parsedCMD[1]);
                 return true;
             }
-            case "edit":
+            case "edittype":
             {
-                
+                users.changeUserType(parsedCMD[1], Users.UserType.valueOf(parsedCMD[2]));
+                return true;
+            }
+            case "editpassword":
+            {
+                users.changePassword(parsedCMD[1], parsedCMD[2]);
                 return true;
             }
         }
