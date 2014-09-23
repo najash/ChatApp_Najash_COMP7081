@@ -22,6 +22,7 @@ public class Server {
 	// the boolean that will be turned of to stop the server
 	private boolean keepGoing;
 	
+        Users users = new Users();
 
 	/*
 	 *  server constructor that receive the port to listen to for connection as parameter
@@ -64,13 +65,16 @@ public class Server {
 				
 
                                 ClientThread t = new ClientThread(socket);  // make a thread of it
-
-                        //      if(t.password.equals(users.getPassword(t.username)) == null)
-                        //      {
-                        //          t.start();
-                        //      }
-                                
-				
+                                String pass = users.getPassword(t.username);
+                               
+                                if (pass == null) { //new user
+                                    
+                                } else if(t.password.equals(pass)) {
+                                    al.add(t);
+                                    t.start();
+                                } else { //password wrong
+                                    
+                                }
 			}
 			// I was asked to stop
 			try {   
@@ -201,6 +205,7 @@ public class Server {
 		// the Username of the Client
 		String username;
                 String password;
+                Users.UserType type;
 		// the only type of message a will receive
 		ChatMessage cm;
 		// the date I connect
@@ -237,6 +242,7 @@ public class Server {
 		// what will run forever
 		public void run() {
 			// to loop until LOGOUT
+                        type = users.getUserType(username);
 			boolean keepGoing = true;
 			while(keepGoing) {
 				// read a String (which is an object)
@@ -262,9 +268,9 @@ public class Server {
                                     {
                                         //separate function to avoid messy code
                                         CommandLine cmdLine = new CommandLine(message);
-                                        if(!cmdLine.parseCMD())
+                                        if(type == Users.UserType.ADMIN && !cmdLine.parseCMD())
                                         {
-                                            //invalid command
+                                            writeMsg("Invalid Command\n");
                                         }
                                     }
                                     else

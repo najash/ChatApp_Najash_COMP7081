@@ -33,7 +33,7 @@ public abstract class Database {
      */
     protected Connection connect() {
         try {
-            return DriverManager.getConnection("jdbc:sqlite:c:\\test\\db.db");
+            return DriverManager.getConnection("jdbc:sqlite:db.db");
         } catch (SQLException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
