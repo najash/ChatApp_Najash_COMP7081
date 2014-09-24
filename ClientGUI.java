@@ -18,6 +18,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 	private JTextField tfServer, tfPort;
 	// to Logout and get the list of the users
 	private JButton login, logout, whoIsIn;
+        //login text fields
+        private JTextField username;
+        private JPasswordField password;
 	// for the chat room
 	private JTextArea ta;
 	// if it is for connection
@@ -53,20 +56,33 @@ public class ClientGUI extends JFrame implements ActionListener {
 		northPanel.add(serverAndPort);
 
 		// the Label and the TextField
-		label = new JLabel("Enter your username below", SwingConstants.CENTER);
+		label = new JLabel("Enter your message below", SwingConstants.CENTER);
 		northPanel.add(label);
-		tf = new JTextField("Anonymous");
+		tf = new JTextField();
 		tf.setBackground(Color.WHITE);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
 
 		// The CenterPanel which is the chat room
-		ta = new JTextArea("Welcome to the Chat room\n", 80, 80);
+		ta = new JTextArea("Welcome to the Chat room\n", 25, 40);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(ta));
 		ta.setEditable(false);
 		add(centerPanel, BorderLayout.CENTER);
 
+                //login fields
+                JPanel loginpanel = new JPanel();
+                username = new JTextField();
+                username.setPreferredSize(new Dimension(100, 20));
+                loginpanel.add(new JLabel("Username: "));
+                loginpanel.add(username);
+                password = new JPasswordField();
+                password.setPreferredSize(new Dimension(100, 20));
+                loginpanel.add(new JLabel("Password: "));
+                loginpanel.add(password);
+                username.addActionListener(this);
+                password.addActionListener(this);
+                
 		// the 3 buttons
 		login = new JButton("Login");
 		login.addActionListener(this);
@@ -77,17 +93,24 @@ public class ClientGUI extends JFrame implements ActionListener {
 		whoIsIn.addActionListener(this);
 		whoIsIn.setEnabled(false);		// you have to login before being able to Who is in
 
-		JPanel southPanel = new JPanel();
-		southPanel.add(login);
-		southPanel.add(logout);
-		southPanel.add(whoIsIn);
-		add(southPanel, BorderLayout.SOUTH);
+		JPanel loginBtnPanel = new JPanel();
+		loginBtnPanel.add(login);
+		loginBtnPanel.add(logout);
+		loginBtnPanel.add(whoIsIn);
+		
+                JPanel southPanel = new JPanel();
+                southPanel.add(loginpanel, BorderLayout.NORTH);
+                southPanel.add(loginBtnPanel, BorderLayout.SOUTH);
+                add(southPanel, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setSize(600, 600);
 		setVisible(true);
-		tf.requestFocus();
-
+                tf.addActionListener(this);
+		username.requestFocus();
+                pack();
+                setLocationRelativeTo(null);
+                
 	}
 
 	// called by the Client to append text in the TextArea 
@@ -101,17 +124,18 @@ public class ClientGUI extends JFrame implements ActionListener {
 		login.setEnabled(true);
 		logout.setEnabled(false);
 		whoIsIn.setEnabled(false);
-		label.setText("Enter your username below");
-		tf.setText("Anonymous");
 		// reset port number and host name as a construction time
 		tfPort.setText("" + defaultPort);
 		tfServer.setText(defaultHost);
 		// let the user change them
 		tfServer.setEditable(false);
 		tfPort.setEditable(false);
-		// don't react to a <CR> after the username
-		tf.removeActionListener(this);
 		connected = false;
+                password.setEnabled(true);
+                username.setEnabled(true);
+                username.requestFocus();
+                login.setEnabled(true);
+                logout.setEnabled(false);
 	}
 		
 	/*
@@ -120,8 +144,14 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
 		// if it is the Logout button
+                
 		if(o == logout) {
 			client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
+                        password.setEnabled(true);
+                        username.setEnabled(true);
+                        username.requestFocus();
+                        login.setEnabled(true);
+                        logout.setEnabled(false);
 			return;
 		}
 		// if it the who is in button
@@ -139,11 +169,12 @@ public class ClientGUI extends JFrame implements ActionListener {
 		}
 		
 
-		if(o == login) {
+		if(o == login || o == password || o == username) {
 			// ok it is a connection request
-			String username = tf.getText().trim();
+			String user = username.getText().trim();
+                        String pass = new String(password.getPassword());
 			// empty username ignore it
-			if(username.length() == 0)
+			if(user.length() == 0)
 				return;
 			// empty serverAddress ignore it
 			String server = tfServer.getText().trim();
@@ -162,12 +193,15 @@ public class ClientGUI extends JFrame implements ActionListener {
 			}
 
 			// try creating a new Client with GUI
-			client = new Client(server, port, username, this);
+			client = new Client(server, port, user, pass, this);
 			// test if we can start the Client
 			if(!client.start()) 
 				return;
-			tf.setText("");
-			label.setText("Enter your message below");
+                        password.setText("");
+                        password.setEnabled(false);
+                        username.setText("");
+			username.setEnabled(false);
+                                          
 			connected = true;
 			
 			// disable login button
@@ -179,7 +213,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			tfServer.setEditable(false);
 			tfPort.setEditable(false);
 			// Action listener for when the user enter a message
-			tf.addActionListener(this);
+                        tf.requestFocus();
 		}
 
 	}

@@ -17,6 +17,8 @@ import java.sql.Statement;
  * @author A00807688
  */
 public abstract class Database {
+    private Connection connection;
+    
     public Database() {
         try {
             // load the sqlite-JDBC driver using the current class loader
@@ -63,6 +65,7 @@ public abstract class Database {
             try {
                 Statement statement = conn.createStatement();
                 statement.execute(sql);
+                conn.close();
                 return true;
             } catch (SQLException ex) {
                 Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,12 +75,20 @@ public abstract class Database {
         return false;
     }
     
-    protected ResultSet executeQuery(String sql) {
-        Connection conn = connect();
-        
-        if (conn != null) {
+    protected void close() {
+        if (connection != null)
             try {
-                Statement statement = conn.createStatement();
+                connection.close();
+        } catch (SQLException ex) {
+        }
+    }
+    
+    protected ResultSet executeQuery(String sql) {
+        connection = connect();
+        
+        if (connection != null) {
+            try {
+                Statement statement = connection.createStatement();
                 statement.execute(sql);
                 return statement.executeQuery(sql);
             } catch (SQLException ex) {

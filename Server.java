@@ -63,17 +63,17 @@ public class Server {
 				if(!keepGoing)
                                     break;
 				
-
                                 ClientThread t = new ClientThread(socket);  // make a thread of it
                                 String pass = users.getPassword(t.username);
-                               
                                 if (pass == null) { //new user
-                                    
+                                    t.writeMsg("Invalid username or password\n");
+                                    t.close();
                                 } else if(t.password.equals(pass)) {
                                     al.add(t);
                                     t.start();
                                 } else { //password wrong
-                                    
+                                    t.writeMsg("Invalid username or password\n");
+                                    t.close();
                                 }
 			}
 			// I was asked to stop
@@ -225,8 +225,7 @@ public class Server {
 				sInput  = new ObjectInputStream(socket.getInputStream());
 				// read the username
 				username = (String) sInput.readObject();
-                                
-				display(username + " just connected.");
+                                password = (String) sInput.readObject();
 			}
 			catch (IOException e) {
 				display("Exception creating new Input/output Streams: " + e);
@@ -241,6 +240,7 @@ public class Server {
                 
 		// what will run forever
 		public void run() {
+			display(username + " just connected.");
 			// to loop until LOGOUT
                         type = users.getUserType(username);
 			boolean keepGoing = true;
@@ -263,20 +263,16 @@ public class Server {
 				switch(cm.getType()) {
 
 				case ChatMessage.MESSAGE:
-                                {
-                                    if(message.startsWith("/"))
-                                    {
+                                    if(message.startsWith("/")) {
                                         //separate function to avoid messy code
                                         CommandLine cmdLine = new CommandLine(message);
-                                        if(type == Users.UserType.ADMIN && !cmdLine.parseCMD())
-                                        {
+                                        if(type == Users.UserType.ADMIN && !cmdLine.parseCMD(this)) {
                                             writeMsg("Invalid Command\n");
                                         }
-                                    }
-                                    else
+                                    } else {
                                         broadcast(username + ": " + message);
-					break;
-                                }
+                                    }
+                                    break;
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");
 					keepGoing = false;
@@ -317,7 +313,7 @@ public class Server {
 		/*
 		 * Write a String to the Client output stream
 		 */
-		private boolean writeMsg(String msg) {
+		public boolean writeMsg(String msg) {
 			// if Client is still connected send the message to it
 			if(!socket.isConnected()) {
 				close();

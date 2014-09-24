@@ -37,33 +37,37 @@ public class Users extends Database {
     
     public String getPassword(String username) {
         ResultSet rs = executeQuery("SELECT pass FROM users WHERE user='" + username + "';");
-        
+        String pass = null;
         if (rs != null) {
             try {
                 rs.next();
-                return rs.getString("pass");
+                pass = rs.getString("pass");
             } catch (SQLException ex) {
-                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                close();
             }
         }
         
-        return null;
+        return pass;
     }
     
     public UserType getUserType(String username) {
         ResultSet rs = executeQuery("SELECT type FROM users WHERE user='" + username + "';");
+        UserType userType = null;
         
         if (rs != null) {
             try {
                 rs.next();
                 int type = rs.getInt("type");
-                return UserType.values()[type];
+                userType = UserType.values()[type];
             } catch (SQLException ex) {
                 Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                close();
             }
         }
         
-        return null;
+        return userType;
     }
 
     @Override
@@ -73,6 +77,6 @@ public class Users extends Database {
 
     @Override
     protected void createTable() {
-        execute("CREATE TABLE IF NOT EXISTS users (user string, pass string, type integer);");
+        execute("CREATE TABLE IF NOT EXISTS users (user string, pass string, type integer, PRIMARY KEY (user));");
     }
 }

@@ -49,6 +49,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 		addWindowListener(this);
 		setSize(400, 600);
 		setVisible(true);
+                setLocationRelativeTo(null);
 	}		
 
 	// append message to the two JTextArea
