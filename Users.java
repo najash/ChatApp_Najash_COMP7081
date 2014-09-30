@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class Users extends Database {
     public enum UserType {
-        ADMIN, USER, GUEST;
+        ADMIN, USER;
     }
     
     public boolean addUser(String user, String pass, UserType type) {

@@ -8,17 +8,19 @@
  * @author A00813191
  */
 public class CommandLine {
-    String[] parsedCMD;
     Users users = new Users();
+    Server server;
     
-    public CommandLine(String cmd)
+    public CommandLine(Server server)
     {
-        //splits cmd into a string array (parsedCMD) with each entry delimited by whitespace
-        parsedCMD = cmd.split("\\s+");
+        this.server = server;
     }
     
-    public boolean parseCMD(Server.ClientThread thread)
+    public boolean parseCMD(String cmd, Server.ClientThread thread)
     {
+        //splits cmd into a string array (parsedCMD) with each entry delimited by whitespace
+        String[] parsedCMD = cmd.split("\\s+");
+        
         //if returns false then command is invalid, returns true if command completed
         if(parsedCMD.length <= 1)
         {
@@ -28,7 +30,6 @@ public class CommandLine {
                     
         //gets the command without the slash for presentation sake
         String userCommand = parsedCMD[0].substring(1);
-        System.out.println("Length: " + parsedCMD.length);
         switch(userCommand.toLowerCase())
         {
             case "add":
@@ -58,6 +59,13 @@ public class CommandLine {
                 if (parsedCMD.length == 3 && 
                         users.changeUserType(parsedCMD[1], Users.UserType.valueOf(parsedCMD[2].toUpperCase()))) {
                     thread.writeMsg("User " + parsedCMD[1] + " privilege was changed to " + parsedCMD[2] + "\n");
+                    Server.ClientThread t = server.getClientThread(parsedCMD[1]);
+                    
+                    if (t != null) {
+                        t.writeMsg("<~>" + parsedCMD[2].substring(0, 1));
+                        t.writeMsg("Your user type has been changed to " + parsedCMD[2].toUpperCase() + "\n");
+                    }
+                    
                     return true;
                 } else {
                     thread.writeMsg("Usage: /edittype [username] [type]\n");

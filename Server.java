@@ -10,7 +10,7 @@ public class Server {
 	// a unique ID for each connection
 	private static int uniqueId;
 	// an ArrayList to keep the list of the Client
-	private ArrayList<ClientThread> al;
+	private HashMap<String, ClientThread> al;
 
         
 	// if I am in a GUI
@@ -24,6 +24,7 @@ public class Server {
 	
         Users users = new Users();
 
+        CommandLine cmdLine = new CommandLine(this);
 	/*
 	 *  server constructor that receive the port to listen to for connection as parameter
 	 *  in console
@@ -40,7 +41,7 @@ public class Server {
 		// to display hh:mm:ss
 		sdf = new SimpleDateFormat("HH:mm:ss");
 		// ArrayList for the Client list
-		al = new ArrayList<ClientThread>();
+		al = new HashMap<String, ClientThread>();
 
 	}
 	
@@ -69,7 +70,7 @@ public class Server {
                                     t.writeMsg("Invalid username or password\n");
                                     t.close();
                                 } else if(t.password.equals(pass)) {
-                                    al.add(t);
+                                    al.put(t.username, t);
                                     t.start();
                                 } else { //password wrong
                                     t.writeMsg("Invalid username or password\n");
@@ -80,7 +81,7 @@ public class Server {
 			try {   
 				serverSocket.close();
 				for(int i = 0; i < al.size(); ++i) {
-					ClientThread tc = al.get(i);
+					ClientThread tc = (ClientThread)al.values().toArray()[i];
 					try {
 					tc.sInput.close();
 					tc.sOutput.close();
@@ -141,7 +142,7 @@ public class Server {
 		// we loop in reverse order in case we would have to remove a Client
 		// because it has disconnected
 		for(int i = al.size(); --i >= 0;) {
-			ClientThread ct = al.get(i);
+			ClientThread ct = (ClientThread)al.values().toArray()[i];
 			// try to write to the Client if it fails remove it from the list
 			if(!ct.writeMsg(messageLf)) {
 				al.remove(i);
@@ -154,7 +155,7 @@ public class Server {
 	synchronized void remove(int id) {
 		// scan the array list until we found the Id
 		for(int i = 0; i < al.size(); ++i) {
-			ClientThread ct = al.get(i);
+			ClientThread ct = (ClientThread)al.values().toArray()[i];
 			// found it
 			if(ct.id == id) {
 				al.remove(i);
@@ -193,6 +194,10 @@ public class Server {
 		Server server = new Server(portNumber);
 		server.start();
 	}
+
+        public ClientThread getClientThread(String username) {
+            return al.get(username);
+        }
 
 	/** One instance of this thread will run for each client */
 	class ClientThread extends Thread {
@@ -235,7 +240,7 @@ public class Server {
 			// but I read a String, I am sure it will work
 			catch (ClassNotFoundException e) {
 			}
-            date = new Date().toString() + "\n";
+                        date = new Date().toString() + "\n";
 		}
                 
 		// what will run forever
@@ -243,6 +248,7 @@ public class Server {
 			display(username + " just connected.");
 			// to loop until LOGOUT
                         type = users.getUserType(username);
+                        writeMsg("<~>" + type.name().toLowerCase().substring(0, 1));
 			boolean keepGoing = true;
 			while(keepGoing) {
 				// read a String (which is an object)
@@ -265,8 +271,7 @@ public class Server {
 				case ChatMessage.MESSAGE:
                                     if(message.startsWith("/")) {
                                         //separate function to avoid messy code
-                                        CommandLine cmdLine = new CommandLine(message);
-                                        if(type == Users.UserType.ADMIN && !cmdLine.parseCMD(this)) {
+                                        if(type == Users.UserType.ADMIN && !cmdLine.parseCMD(message, this)) {
                                             writeMsg("Invalid Command\n");
                                         }
                                     } else {
@@ -281,7 +286,7 @@ public class Server {
 					writeMsg("List of the users connected at " + sdf.format(new Date()) + "\n");
 					// scan al the users connected
 					for(int i = 0; i < al.size(); ++i) {
-						ClientThread ct = al.get(i);
+						ClientThread ct = (ClientThread)al.values().toArray()[i];
 						writeMsg((i+1) + ") " + ct.username + " since " + ct.date);
 					}
 					break;

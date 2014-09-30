@@ -149,19 +149,10 @@ public class Client  {
 				try {
 					String msg = (String) sInput.readObject();
                                         
-                                        if (msg.substring(0, 3).equals("<~>")) { //check if the message is for the admin
-                                            String user;
-                                            user = msg.substring(3, msg.lastIndexOf("</>"));
-                                            String index = msg.substring(msg.lastIndexOf("</>") + 3);
-                                            int result;
-                                            result = JOptionPane.showConfirmDialog(cg, "Add " + user + " to Chat?", 
-                                                    "Add User", JOptionPane.YES_NO_OPTION); //ask admin if add given user
-                                            
-                                            if (result == JOptionPane.YES_OPTION) {
-                                                sendMessage(new ChatMessage(ChatMessage.APPROVE, "<y>" + index));
-                                            } else {
-                                                sendMessage(new ChatMessage(ChatMessage.APPROVE, "<n>" + index));
-                                            }
+                                        if (msg.substring(0, 4).equals("<~>a")) { //check if the message is for the admin
+                                            cg.setTitle("Client - Admin");
+                                        } else if (msg.substring(0, 4).equals("<~>u")) { //check if the message is for the admin
+                                            cg.setTitle("Client - User");
                                         } else {
                                             // if console mode print the message and add back the prompt
                                             if(cg == null) {
