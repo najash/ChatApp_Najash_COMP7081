@@ -18,7 +18,7 @@ public class Users extends Database {
     public enum UserType {
         ADMIN, USER;
     }
-    
+        
     public boolean addUser(String user, String pass, UserType type) {
         return execute("INSERT INTO users VALUES('" + user + "','" + pass + "'," + type.ordinal() + ");");
     }
@@ -78,5 +78,13 @@ public class Users extends Database {
     @Override
     protected void createTable() {
         execute("CREATE TABLE IF NOT EXISTS users (user string, pass string, type integer, PRIMARY KEY (user));");
+        
+        ResultSet rs = executeQuery("SELECT * FROM users");
+        
+        try {
+            if (!rs.next()) {
+                addUser("admin", "user", UserType.ADMIN);
+            }
+        } catch (SQLException ex) { }
     }
 }

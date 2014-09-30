@@ -11,8 +11,6 @@ public class Server {
 	private static int uniqueId;
 	// an ArrayList to keep the list of the Client
 	private HashMap<String, ClientThread> al;
-
-        
 	// if I am in a GUI
 	private ServerGUI sg;
 	// to display time
@@ -72,6 +70,7 @@ public class Server {
                                 } else if(t.password.equals(pass)) {
                                     al.put(t.username, t);
                                     t.start();
+                                    broadcastUserList();
                                 } else { //password wrong
                                     t.writeMsg("Invalid username or password\n");
                                     t.close();
@@ -126,6 +125,29 @@ public class Server {
 		else
 			sg.appendEvent(time + "\n");
 	}
+        
+        private String getUserList()
+        {
+            Iterator<String> it = al.keySet().iterator();
+            String str = "";
+            while(it.hasNext())
+            {
+                str += (String)it.next() + "\n";
+            }
+            return str;
+        }
+        
+        private void broadcastUserList()
+        {
+            String str = getUserList();
+            
+            Iterator<ClientThread> it = al.values().iterator();
+            while(it.hasNext())
+            {
+                ClientThread temp = it.next();
+                temp.writeMsg("<~>list" + str);
+            }
+        }
 	/*
 	 *  to broadcast a message to all Clients
 	 */
@@ -160,6 +182,7 @@ public class Server {
 			if(ct.id == id) {
 				al.remove(i);
 				return;
+                                
 			}
 		}
 	}
@@ -197,7 +220,7 @@ public class Server {
 
         public ClientThread getClientThread(String username) {
             return al.get(username);
-        }
+        } 
 
 	/** One instance of this thread will run for each client */
 	class ClientThread extends Thread {

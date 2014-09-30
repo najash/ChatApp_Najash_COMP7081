@@ -2,6 +2,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 
 /*
@@ -22,7 +23,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         private JTextField username;
         private JPasswordField password;
 	// for the chat room
-	private JTextArea ta;
+	private JTextArea ta, taDisplay;
 	// if it is for connection
 	private boolean connected;
 	// the Client object
@@ -43,6 +44,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 		// the server name anmd the port number
 		JPanel serverAndPort = new JPanel(new GridLayout(1,5, 1, 3));
 		// the two JTextField with default value for server address and port number
+                
+                JPanel eastPanel = new JPanel(new GridLayout(1,1));
+                
 		tfServer = new JTextField(host);
 		tfPort = new JTextField("" + port);
 		tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -70,6 +74,11 @@ public class ClientGUI extends JFrame implements ActionListener {
 		ta.setEditable(false);
 		add(centerPanel, BorderLayout.CENTER);
 
+                taDisplay = new JTextArea("", 10, 10);
+                eastPanel.add(new JScrollPane(taDisplay));
+                taDisplay.setEditable(false);
+                add(eastPanel, BorderLayout.EAST);
+                
                 //login fields
                 JPanel loginpanel = new JPanel();
                 username = new JTextField();
@@ -118,6 +127,11 @@ public class ClientGUI extends JFrame implements ActionListener {
 		ta.append(str);
 		ta.setCaretPosition(ta.getText().length() - 1);
 	}
+        
+        void displayUsers(String str)
+        {
+            taDisplay.setText(str);
+        }
 	// called by the GUI is the connection failed
 	// we reset our buttons, label, textfield
 	void connectionFailed() {

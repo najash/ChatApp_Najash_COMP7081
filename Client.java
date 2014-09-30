@@ -153,7 +153,10 @@ public class Client  {
                                             cg.setTitle("Client - Admin");
                                         } else if (msg.substring(0, 4).equals("<~>u")) { //check if the message is for the admin
                                             cg.setTitle("Client - User");
-                                        } else {
+                                        } else if (msg.substring(0, 7).equals("<~>list")) {
+                                            cg.displayUsers(msg.substring(7));
+                                        }
+                                        else {
                                             // if console mode print the message and add back the prompt
                                             if(cg == null) {
                                                     System.out.println(msg);
