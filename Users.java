@@ -83,7 +83,7 @@ public class Users extends Database {
         
         try {
             if (!rs.next()) {
-                addUser("admin", "user", UserType.ADMIN);
+                addUser("admin", "pass", UserType.ADMIN);
             }
         } catch (SQLException ex) { }
     }
