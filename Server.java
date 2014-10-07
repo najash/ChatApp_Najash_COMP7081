@@ -224,6 +224,25 @@ public class Server {
             return al.get(username);
         } 
 
+        void broadcastRooms() {
+            String list = createRoomList();
+            for(int i = al.size(); --i >= 0;) {
+                    ClientThread ct = (ClientThread)al.values().toArray()[i];
+                    ct.writeMsg("<~>room" + list);
+            }
+        }
+        
+        private String createRoomList() {
+            String roomList = "";
+            Rooms rooms = new Rooms();
+            ArrayList<String> list = rooms.getRooms();
+
+            for (String room: list) {
+                roomList += room + ",";
+            }
+            return roomList;
+        }
+
 	/** One instance of this thread will run for each client */
 	class ClientThread extends Thread {
 		// the socket where to listen/talk
@@ -269,14 +288,7 @@ public class Server {
 		}
                 
                 public void sendRoomList() {
-                    String roomList = "";
-                    Rooms rooms = new Rooms();
-                    ArrayList<String> list = rooms.getRooms();
-                    
-                    for (String room: list) {
-                        roomList += room + ",";
-                    }
-                            
+                    String roomList = createRoomList();
                     writeMsg("<~>room" + roomList);
                 }
                 

@@ -9,6 +9,7 @@
  */
 public class CommandLine {
     Users users = new Users();
+    Rooms rooms = new Rooms();
     Server server;
     
     public CommandLine(Server server)
@@ -80,6 +81,28 @@ public class CommandLine {
                     return true;
                 } else {
                     thread.writeMsg("Usage: /editpassword [username] [password]\n");
+                }
+                break;
+            }
+            case "addroom":
+            {
+                if (parsedCMD.length == 2 && rooms.addRoom(parsedCMD[1])) {
+                    thread.writeMsg("Chat room " + parsedCMD[1] + " was created\n");
+                    server.broadcastRooms();
+                    return true;
+                } else {
+                    thread.writeMsg("Usage: /addroom [room name]\n");
+                }
+                break;
+            }
+            case "rmroom":
+            {
+                if (parsedCMD.length == 2 && rooms.deleteRoom(parsedCMD[1])) {
+                    thread.writeMsg("Chat room " + parsedCMD[1] + " was removed\n");
+                    server.broadcastRooms();
+                    return true;
+                } else {
+                    thread.writeMsg("Usage: /rmroom [room name]\n");
                 }
                 break;
             }
