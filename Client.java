@@ -137,6 +137,17 @@ public class Client  {
 			
 	}
 	
+        public void handleSystemMessage(String msg) {
+            if (msg.substring(0, 4).equals("<~>a")) {
+                cg.setTitle("Client - Admin");
+            } else if (msg.substring(0, 4).equals("<~>u")) {
+                cg.setTitle("Client - User");
+            } else if (msg.substring(0, 7).equals("<~>list")) {
+                cg.displayUsers(msg.substring(7));
+            }  else if (msg.substring(0, 7).equals("<~>room")) {
+                cg.populateRoomList(msg.substring(7));
+            }
+        }
 
 	/*
 	 * a class that waits for the message from the server and append them to the JTextArea
@@ -149,14 +160,9 @@ public class Client  {
 				try {
 					String msg = (String) sInput.readObject();
                                         
-                                        if (msg.substring(0, 4).equals("<~>a")) { //check if the message is for the admin
-                                            cg.setTitle("Client - Admin");
-                                        } else if (msg.substring(0, 4).equals("<~>u")) { //check if the message is for the admin
-                                            cg.setTitle("Client - User");
-                                        } else if (msg.substring(0, 7).equals("<~>list")) {
-                                            cg.displayUsers(msg.substring(7));
-                                        }
-                                        else {
+                                        if (msg.substring(0, 3).equals("<~>")) { //check if the message is for the system
+                                            handleSystemMessage(msg);
+                                        } else {
                                             // if console mode print the message and add back the prompt
                                             if(cg == null) {
                                                     System.out.println(msg);

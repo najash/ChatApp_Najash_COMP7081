@@ -172,7 +172,7 @@ public class Server {
 			}
 		}
 	}
-
+        
 	// for a client who logoff using the LOGOUT message
 	synchronized void remove(int id) {
 		// scan the array list until we found the Id
@@ -217,6 +217,8 @@ public class Server {
 		Server server = new Server(portNumber);
 		server.start();
 	}
+        
+        
 
         public ClientThread getClientThread(String username) {
             return al.get(username);
@@ -266,12 +268,25 @@ public class Server {
                         date = new Date().toString() + "\n";
 		}
                 
+                public void sendRoomList() {
+                    String roomList = "";
+                    Rooms rooms = new Rooms();
+                    ArrayList<String> list = rooms.getRooms();
+                    
+                    for (String room: list) {
+                        roomList += room + ",";
+                    }
+                            
+                    writeMsg("<~>room" + roomList);
+                }
+                
 		// what will run forever
 		public void run() {
 			display(username + " just connected.");
 			// to loop until LOGOUT
                         type = users.getUserType(username);
                         writeMsg("<~>" + type.name().toLowerCase().substring(0, 1));
+                        sendRoomList();
 			boolean keepGoing = true;
 			while(keepGoing) {
 				// read a String (which is an object)

@@ -18,7 +18,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	// to hold the server address an the port number
 	private JTextField tfServer, tfPort;
 	// to Logout and get the list of the users
-	private JButton login, logout, whoIsIn;
+	private JButton login, logout;
         //login text fields
         private JTextField username;
         private JPasswordField password;
@@ -31,6 +31,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 	// the default port number
 	private int defaultPort;
 	private String defaultHost;
+        
+        //char rooms list
+        private JComboBox<String> rooms;
 
 	// Constructor connection receiving a socket number
 	ClientGUI(String host, int port) {
@@ -98,14 +101,16 @@ public class ClientGUI extends JFrame implements ActionListener {
 		logout = new JButton("Logout");
 		logout.addActionListener(this);
 		logout.setEnabled(false);		// you have to login before being able to logout
-		whoIsIn = new JButton("Who is in");
-		whoIsIn.addActionListener(this);
-		whoIsIn.setEnabled(false);		// you have to login before being able to Who is in
-
+	
+                rooms = new JComboBox<String>();
+                rooms.setPreferredSize(new Dimension(100, 20));
+                rooms.addActionListener(this);
+                
 		JPanel loginBtnPanel = new JPanel();
 		loginBtnPanel.add(login);
 		loginBtnPanel.add(logout);
-		loginBtnPanel.add(whoIsIn);
+                loginBtnPanel.add(new JLabel("Room: "));
+		loginBtnPanel.add(rooms);
 		
                 JPanel southPanel = new JPanel();
                 southPanel.add(loginpanel, BorderLayout.NORTH);
@@ -137,7 +142,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 	void connectionFailed() {
 		login.setEnabled(true);
 		logout.setEnabled(false);
-		whoIsIn.setEnabled(false);
 		// reset port number and host name as a construction time
 		tfPort.setText("" + defaultPort);
 		tfServer.setText(defaultHost);
@@ -168,9 +172,9 @@ public class ClientGUI extends JFrame implements ActionListener {
                         logout.setEnabled(false);
 			return;
 		}
-		// if it the who is in button
-		if(o == whoIsIn) {
-			client.sendMessage(new ChatMessage(ChatMessage.WHOISIN, ""));				
+		
+		if(o == rooms) {
+                    System.err.println(rooms.getSelectedItem());
 			return;
 		}
 
@@ -222,7 +226,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 			login.setEnabled(false);
 			// enable the 2 buttons
 			logout.setEnabled(true);
-			whoIsIn.setEnabled(true);
 			// disable the Server and Port JTextField
 			tfServer.setEditable(false);
 			tfPort.setEditable(false);
@@ -236,6 +239,14 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public static void main(String[] args) {
 		new ClientGUI("localhost", 1500);
 	}
+
+    void populateRoomList(String str) {
+        StringTokenizer strToken = new StringTokenizer(str, ",");
+        rooms.removeAllItems();
+        while (strToken.hasMoreTokens()) {
+           rooms.addItem(strToken.nextToken());
+        }
+    }
 
 }
 
