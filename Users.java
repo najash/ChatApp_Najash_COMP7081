@@ -79,12 +79,15 @@ public class Users extends Database {
     protected void createTable() {
         execute("CREATE TABLE IF NOT EXISTS users (user string, pass string, type integer, PRIMARY KEY (user));");
         
-        ResultSet rs = executeQuery("SELECT * FROM users");
+        ResultSet rs = executeQuery("SELECT * FROM users;");
         
         try {
             if (!rs.next()) {
                 addUser("admin", "pass", UserType.ADMIN);
             }
         } catch (SQLException ex) { }
+        finally {
+            close();
+        }
     }
 }
