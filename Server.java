@@ -172,7 +172,22 @@ public class Server {
 			}
 		}
 	}
-        
+
+	/*
+	 *  to broadcast a clear to all Clients
+	 */
+	public synchronized void clear() {
+
+		// display message on console or GUI
+		if(sg == null)
+			System.out.print("\b\b\b\b\b");
+		else
+			sg.appendRoom("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");     // append in the room window
+
+	}    
+    
+    
+    
 	// for a client who logoff using the LOGOUT message
 	synchronized void remove(int id) {
 		// scan the array list until we found the Id
