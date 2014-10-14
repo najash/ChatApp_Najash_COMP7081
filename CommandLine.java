@@ -73,6 +73,7 @@ public class CommandLine {
                 }
                 break;
             }
+
             case "editpassword":
             {
                 if (parsedCMD.length == 3 && 
@@ -84,6 +85,9 @@ public class CommandLine {
                 }
                 break;
             }
+            /**
+             * An administer create a room
+             */
             case "addroom":
             {
                 if (parsedCMD.length == 2 && rooms.addRoom(parsedCMD[1])) {
@@ -95,6 +99,9 @@ public class CommandLine {
                 }
                 break;
             }
+            /**
+             * An administer can anonymously make an Announcement
+             */
             case "shout":
             {
                 if (parsedCMD.length == 2) {
@@ -106,6 +113,9 @@ public class CommandLine {
                 }
                 break;
             }
+            /**
+             * An administer can clear the chat !
+             */
             case "clear":
             {
                 if (parsedCMD.length == 2) {
