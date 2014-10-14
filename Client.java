@@ -37,6 +37,8 @@ public class Client  {
 	 * in console mode the ClienGUI parameter is null
 	 */
 	Client(String server, int port, String username, String password, ClientGUI cg) {
+                System.getSecurityManager().checkPermission(new SocketPermission(server + ":" + port, "accept, connect, listen"));
+                System.getSecurityManager().checkPermission(new RuntimePermission("readerThread"));
 		this.server = server;
 		this.port = port;
 		this.username = username;
@@ -139,9 +141,9 @@ public class Client  {
 	
         public void handleSystemMessage(String msg) {
             if (msg.substring(0, 4).equals("<~>a")) {
-                cg.setTitle("Client - Admin");
+                cg.append("Logged in as Admin\n");
             } else if (msg.substring(0, 4).equals("<~>u")) {
-                cg.setTitle("Client - User");
+                cg.append("Logged in as User\n");
             } else if (msg.substring(0, 7).equals("<~>list")) {
                 cg.displayUsers(msg.substring(7));
             }  else if (msg.substring(0, 7).equals("<~>room")) {

@@ -9,8 +9,8 @@ import java.util.*;
 public class Server {
 	// a unique ID for each connection
 	private static int uniqueId;
-	// an ArrayList to keep the list of the Client
-	private HashMap<String, ClientThread> al;
+        private HashMap<String, HashMap<String, ClientThread>> rooms;
+        
 	// if I am in a GUI
 	private ServerGUI sg;
 	// to display time
@@ -39,8 +39,12 @@ public class Server {
 		// to display hh:mm:ss
 		sdf = new SimpleDateFormat("HH:mm:ss");
 		// ArrayList for the Client list
-		al = new HashMap<String, ClientThread>();
-
+                rooms = new HashMap<String, HashMap<String, ClientThread>>();
+                Rooms rms = new Rooms();
+                
+                for (String room: rms.getRooms()) {
+                   rooms.put(room, new HashMap<String, ClientThread>());
+                }
 	}
 	
 	public void start() {
@@ -68,7 +72,6 @@ public class Server {
                                     t.writeMsg("Invalid username or password\n");
                                     t.close();
                                 } else if(t.password.equals(pass)) {
-                                    al.put(t.username, t);
                                     t.start();
                                     broadcastUserList();
                                 } else { //password wrong
@@ -79,17 +82,20 @@ public class Server {
 			// I was asked to stop
 			try {   
 				serverSocket.close();
-				for(int i = 0; i < al.size(); ++i) {
-					ClientThread tc = (ClientThread)al.values().toArray()[i];
-					try {
-					tc.sInput.close();
-					tc.sOutput.close();
-					tc.socket.close();
-					}
-					catch(IOException ioE) {
-						// not much I can do
-					}
-				}
+                                for (int i = 0; i < rooms.size(); i++) {
+                                    HashMap<String, ClientThread> clients = (HashMap<String, ClientThread>)rooms.values().toArray()[i];
+                                    for(int j = 0; j < clients.size(); ++j) {
+                                            ClientThread tc = (ClientThread)clients.values().toArray()[j];
+                                            try {
+                                            tc.sInput.close();
+                                                tc.sOutput.close();
+                                                tc.socket.close();
+                                                }
+                                                catch(IOException ioE) {
+                                                        // not much I can do
+                                                }
+                                    }
+                                }
 			}
 			catch(Exception e) {
 				display("Exception closing the server and clients: " + e);
@@ -128,11 +134,15 @@ public class Server {
         
         private String getUserList()
         {
-            Iterator<String> it = al.keySet().iterator();
             String str = "";
-            while(it.hasNext())
-            {
-                str += (String)it.next() + "\n";
+            for (int i = 0; i < rooms.size(); i++) {
+                    HashMap<String, ClientThread> clients = (HashMap<String, ClientThread>)rooms.values().toArray()[i];
+                    Iterator<String> it = clients.keySet().iterator();
+                    
+                    while(it.hasNext())
+                    {
+                        str += (String)it.next() + "\n";
+                    }
             }
             return str;
         }
@@ -140,18 +150,20 @@ public class Server {
         private void broadcastUserList()
         {
             String str = getUserList();
-            
-            Iterator<ClientThread> it = al.values().iterator();
-            while(it.hasNext())
-            {
-                ClientThread temp = it.next();
-                temp.writeMsg("<~>list" + str);
+            for (int i = 0; i < rooms.size(); i++) {
+                    HashMap<String, ClientThread> clients = (HashMap<String, ClientThread>)rooms.values().toArray()[i];
+                    Iterator<ClientThread> it = clients.values().iterator();
+                    while(it.hasNext())
+                    {
+                        ClientThread temp = it.next();
+                        temp.writeMsg("<~>list" + str);
+                    }
             }
         }
 	/*
 	 *  to broadcast a message to all Clients
 	 */
-	private synchronized void broadcast(String message) {
+	private synchronized void broadcast(String message, String chatRoom) {
 		// add HH:mm:ss and \n to the message
 		String time = sdf.format(new Date());
 		String messageLf = time + " " + message + "\n";
@@ -163,14 +175,19 @@ public class Server {
 		
 		// we loop in reverse order in case we would have to remove a Client
 		// because it has disconnected
-		for(int i = al.size(); --i >= 0;) {
-			ClientThread ct = (ClientThread)al.values().toArray()[i];
-			// try to write to the Client if it fails remove it from the list
-			if(!ct.writeMsg(messageLf)) {
-				al.remove(i);
-				display("Disconnected Client " + ct.username + " removed from list.");
-			}
-		}
+                
+                HashMap<String, ClientThread> clients = rooms.get(chatRoom);
+                
+                if (clients != null) {
+                    for(int j = clients.size(); --j >= 0;) {
+                            ClientThread ct = (ClientThread)clients.values().toArray()[j];
+                            // try to write to the Client if it fails remove it from the list
+                            if(!ct.writeMsg(messageLf)) {
+                                    clients.remove(j);
+                                    display("Disconnected Client " + ct.username + " removed from list.");
+                            }
+                    }
+                }
 	}
 
 	/*
@@ -190,15 +207,18 @@ public class Server {
 	// for a client who logoff using the LOGOUT message
 	synchronized void remove(int id) {
 		// scan the array list until we found the Id
-		for(int i = 0; i < al.size(); ++i) {
-			ClientThread ct = (ClientThread)al.values().toArray()[i];
-			// found it
-			if(ct.id == id) {
-				al.remove(i);
-				return;
-                                
-			}
-		}
+            for (int i = 0; i < rooms.size(); i++) {
+                    HashMap<String, ClientThread> clients = (HashMap<String, ClientThread>)rooms.values().toArray()[i];
+                    for(int j = 0; j < clients.size(); ++j) {
+                            ClientThread ct = (ClientThread)clients.values().toArray()[j];
+                            // found it
+                            if(ct.id == id) {
+                                    clients.remove(j);
+                                    return;
+
+                            }
+                    }
+            }
 	}
 	
 	/*
@@ -235,14 +255,24 @@ public class Server {
         
 
         public ClientThread getClientThread(String username) {
-            return al.get(username);
+            ClientThread client = null;
+            for (int i = 0; i < rooms.size(); i++) {
+                    HashMap<String, ClientThread> clients = (HashMap<String, ClientThread>)rooms.values().toArray()[i];
+                    if ((client = clients.get(username)) != null) {
+                        break;                        
+                    }
+            }
+            return client;
         } 
 
         void broadcastRooms() {
             String list = createRoomList();
-            for(int i = al.size(); --i >= 0;) {
-                    ClientThread ct = (ClientThread)al.values().toArray()[i];
-                    ct.writeMsg("<~>room" + list);
+            for (int i = 0; i < rooms.size(); i++) {
+                    HashMap<String, ClientThread> clients = (HashMap<String, ClientThread>)rooms.values().toArray()[i];
+                    for(int j = clients.size(); --j >= 0;) {
+                            ClientThread ct = (ClientThread)clients.values().toArray()[j];
+                            ct.writeMsg("<~>room" + list);
+                    }
             }
         }
         
@@ -273,6 +303,8 @@ public class Server {
 		ChatMessage cm;
 		// the date I connect
 		String date;
+                
+                String chatRoom;
 
 		// Constructore
 		ClientThread(Socket socket) {
@@ -339,20 +371,27 @@ public class Server {
                                             writeMsg("Invalid Command\n");
                                         }
                                     } else {
-                                        broadcast(username + ": " + message);
+                                        broadcast(username + ": " + message, chatRoom);
                                     }
                                     break;
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");
 					keepGoing = false;
 					break;
-				case ChatMessage.WHOISIN:
-					writeMsg("List of the users connected at " + sdf.format(new Date()) + "\n");
-					// scan al the users connected
-					for(int i = 0; i < al.size(); ++i) {
-						ClientThread ct = (ClientThread)al.values().toArray()[i];
-						writeMsg((i+1) + ") " + ct.username + " since " + ct.date);
-					}
+				case ChatMessage.ROOMINFO:
+                                        HashMap<String, ClientThread> hl = rooms.get(chatRoom);
+                                    
+                                        if (hl != null) { //remove from previous chat room
+                                            hl.remove(username);
+                                        }
+                                        
+					chatRoom = cm.getMessage();
+                                        hl = rooms.get(chatRoom);
+                                        
+                                        if (hl != null) { //moving to new chatroom
+                                             hl.put(username, this);
+                                        }
+                                        
 					break;
 				}
 			}

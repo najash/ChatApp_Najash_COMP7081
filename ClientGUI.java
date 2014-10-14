@@ -8,7 +8,7 @@ import java.util.*;
 /*
  * The Client with its GUI
  */
-public class ClientGUI extends JFrame implements ActionListener {
+public class ClientGUI extends JApplet implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	// will first hold "Username:", later on "Enter message"
@@ -36,12 +36,7 @@ public class ClientGUI extends JFrame implements ActionListener {
         private JComboBox<String> rooms;
 
 	// Constructor connection receiving a socket number
-	ClientGUI(String host, int port) {
-
-		super("Chat Client");
-		defaultPort = port;
-		defaultHost = host;
-		
+	public void init() {
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
 		// the server name anmd the port number
@@ -50,8 +45,8 @@ public class ClientGUI extends JFrame implements ActionListener {
                 
                 JPanel eastPanel = new JPanel(new GridLayout(1,1));
                 
-		tfServer = new JTextField(host);
-		tfPort = new JTextField("" + port);
+		tfServer = new JTextField("localhost");
+		tfPort = new JTextField("" + 1500);
 		tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
 
 		serverAndPort.add(new JLabel("Server Address:  "));
@@ -117,13 +112,13 @@ public class ClientGUI extends JFrame implements ActionListener {
                 southPanel.add(loginBtnPanel, BorderLayout.SOUTH);
                 add(southPanel, BorderLayout.SOUTH);
 
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(600, 600);
+		//setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setSize(800, 600);
 		setVisible(true);
                 tf.addActionListener(this);
 		username.requestFocus();
-                pack();
-                setLocationRelativeTo(null);
+               // pack();
+               // setLocationRelativeTo(null);
                 
 	}
 
@@ -159,6 +154,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	/*
 	* Button or JTextField clicked
 	*/
+        @Override
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
 		// if it is the Logout button
@@ -174,8 +170,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 		}
 		
 		if(o == rooms) {
-                    System.err.println(rooms.getSelectedItem());
-			return;
+                        client.sendMessage(new ChatMessage(ChatMessage.ROOMINFO, rooms.getSelectedItem().toString()));
+                        return;
 		}
 
 		// ok it is coming from the JTextField
@@ -191,6 +187,10 @@ public class ClientGUI extends JFrame implements ActionListener {
 			// ok it is a connection request
 			String user = username.getText().trim();
                         String pass = new String(password.getPassword());
+                        
+                        password.setText("");
+                        username.setText("");
+                        
 			// empty username ignore it
 			if(user.length() == 0)
 				return;
@@ -215,9 +215,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 			// test if we can start the Client
 			if(!client.start()) 
 				return;
-                        password.setText("");
+                        
                         password.setEnabled(false);
-                        username.setText("");
 			username.setEnabled(false);
                                           
 			connected = true;
@@ -235,17 +234,13 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 	}
 
-	// to start the whole thing the server
-	public static void main(String[] args) {
-		new ClientGUI("localhost", 1500);
-	}
-
-    void populateRoomList(String str) {
+        void populateRoomList(String str) {
         StringTokenizer strToken = new StringTokenizer(str, ",");
         rooms.removeAllItems();
         while (strToken.hasMoreTokens()) {
            rooms.addItem(strToken.nextToken());
         }
+        client.sendMessage(new ChatMessage(ChatMessage.ROOMINFO, rooms.getSelectedItem().toString()));
     }
 
 }
