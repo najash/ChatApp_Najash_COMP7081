@@ -95,6 +95,29 @@ public class CommandLine {
                 }
                 break;
             }
+            case "shout":
+            {
+                if (parsedCMD.length == 2) {
+                    thread.writeMsg("Announcement: " + parsedCMD[1] +"\n");
+                    server.broadcastRooms();
+                    return true;
+                } else {
+                    thread.writeMsg("Usage: /shout [message]\n");
+                }
+                break;
+            }
+            case "clear":
+            {
+                if (parsedCMD.length == 2) {
+                    thread.writeMsg("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                    thread.writeMsg("\n Chat was cleared, by admin !\n");
+                    thread.writeMsg("\n\n\n\n\n\n\n\n\n");
+                    return true;
+                } else {
+                    thread.writeMsg("Usage: /clear now \n");
+                }
+                break;
+            }
             case "rmroom":
             {
                 if (parsedCMD.length == 2 && rooms.deleteRoom(parsedCMD[1])) {
