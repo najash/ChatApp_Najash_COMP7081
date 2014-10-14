@@ -184,10 +184,9 @@ public class Server {
 		else
 			sg.appendRoom("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");     // append in the room window
 
-	}    
+	} 
     
-    
-    
+
 	// for a client who logoff using the LOGOUT message
 	synchronized void remove(int id) {
 		// scan the array list until we found the Id
