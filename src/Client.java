@@ -37,7 +37,7 @@ public class Client  {
 	 * in console mode the ClienGUI parameter is null
 	 */
 	Client(String server, int port, String username, String password, ClientGUI cg) {
-                System.getSecurityManager().checkPermission(new SocketPermission(server + ":" + port, "accept, connect, listen"));
+                System.getSecurityManager().checkPermission(new SocketPermission(server, "accept, connect, listen, resolve"));
                 System.getSecurityManager().checkPermission(new RuntimePermission("readerThread"));
 		this.server = server;
 		this.port = port;
@@ -176,7 +176,7 @@ public class Client  {
                                         }
 				}
 				catch(IOException e) {
-					display("Server has close the connection: " + e);
+					display("Server has closed the connection.");
 					if(cg != null) 
 						cg.connectionFailed();
 					break;

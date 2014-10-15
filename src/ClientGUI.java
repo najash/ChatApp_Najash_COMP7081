@@ -9,7 +9,6 @@ import java.util.*;
  * The Client with its GUI
  */
 public class ClientGUI extends JApplet implements ActionListener {
-
 	private static final long serialVersionUID = 1L;
 	// will first hold "Username:", later on "Enter message"
 	private JLabel label;
@@ -141,8 +140,8 @@ public class ClientGUI extends JApplet implements ActionListener {
 		tfPort.setText("" + defaultPort);
 		tfServer.setText(defaultHost);
 		// let the user change them
-		tfServer.setEditable(false);
-		tfPort.setEditable(false);
+		tfServer.setEditable(true);
+		tfPort.setEditable(true);
 		connected = false;
                 password.setEnabled(true);
                 username.setEnabled(true);
@@ -202,11 +201,15 @@ public class ClientGUI extends JApplet implements ActionListener {
 			String portNumber = tfPort.getText().trim();
 			if(portNumber.length() == 0)
 				return;
+                        
+                        append("Connecting to server at: " + server + ":" + portNumber + "\n");
+                        
 			int port = 0;
 			try {
 				port = Integer.parseInt(portNumber);
 			}
 			catch(Exception en) {
+                                append(en.getMessage() + "\n");
 				return;   // nothing I can do if port number is not valid
 			}
 
@@ -215,10 +218,12 @@ public class ClientGUI extends JApplet implements ActionListener {
 			// test if we can start the Client
 			if(!client.start()) 
 				return;
+                   
+                        defaultPort = port;
+                        defaultHost = server;
                         
                         password.setEnabled(false);
-			username.setEnabled(false);
-                                          
+			username.setEnabled(false);         
 			connected = true;
 			
 			// disable login button
