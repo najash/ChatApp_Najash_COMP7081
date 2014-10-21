@@ -1,0 +1,3 @@
+jarsigner -keystore keystore.jks chatapp.jar client
+
+password: password

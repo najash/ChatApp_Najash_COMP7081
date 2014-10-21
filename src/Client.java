@@ -37,8 +37,13 @@ public class Client  {
 	 * in console mode the ClienGUI parameter is null
 	 */
 	Client(String server, int port, String username, String password, ClientGUI cg) {
-                System.getSecurityManager().checkPermission(new SocketPermission(server, "accept, connect, listen, resolve"));
-                System.getSecurityManager().checkPermission(new RuntimePermission("readerThread"));
+                try {
+                    System.getSecurityManager().checkPermission(new SocketPermission(server, "connect, resolve"));
+                }
+                catch (Exception ex) {
+                   cg.append(ex.getMessage() + "\n");
+                }
+                
 		this.server = server;
 		this.port = port;
 		this.username = username;
@@ -97,8 +102,10 @@ public class Client  {
 	 * To send a message to the console or the GUI
 	 */
 	private void display(String msg) {
-		if(cg == null)
+		if(cg == null) {
+                        cg.append("Error: " + msg +".\n");
 			System.out.println(msg);      // println in console mode
+                }
 		else
 			cg.append(msg + "\n");		// append to the ClientGUI JTextArea (or whatever)
 	}
@@ -176,7 +183,7 @@ public class Client  {
                                         }
 				}
 				catch(IOException e) {
-					display("Server has closed the connection.");
+					display("Server has close the connection: " + e);
 					if(cg != null) 
 						cg.connectionFailed();
 					break;

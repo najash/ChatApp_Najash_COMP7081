@@ -403,12 +403,6 @@ public class Server {
 		
 		// try to close everything
 		private void close() {
-                        HashMap<String, ClientThread> clients = rooms.get(chatRoom);
-                
-                        if (clients != null) {
-                            clients.remove(username);
-                        }
-                        
 			// try to close the connection
 			try {
 				if(sOutput != null) sOutput.close();
