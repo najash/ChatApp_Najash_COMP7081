@@ -169,7 +169,7 @@ public class ClientGUI extends JApplet implements ActionListener {
 			return;
 		}
 		
-		if(o == rooms) {
+		if(o == rooms && rooms.getItemCount() > 0) {
                         client.sendMessage(new ChatMessage(ChatMessage.ROOMINFO, rooms.getSelectedItem().toString()));
                         return;
 		}
