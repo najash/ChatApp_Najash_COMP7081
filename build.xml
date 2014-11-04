@@ -1,27 +1,3 @@
-def report_xunit(report):
-    """
-    Generate a junit style xml report.  We build the xml doc in reverse order so we can nest it. The xml is returned as a string.
-    """
-    xmltests = ""
-    suitedata = defaultdict(lambda: 0)
-    for jid, jinfo in report.items():
-        jinfo['testid'] = jid
-        if jinfo['status'] in ['fail', 'aborted']:
-            t = """\t<testcase classname="${testname}" name="${testid}" time="${time}">\n"""
-            t += """\t\t<error message="${detail}">\n\t\t</error>\n"""
-            t += """\t</testcase>\n"""
-            if jinfo['status'] == 'fail':
-                suitedata['failures'] += 1
-            if jinfo['status'] == 'aborted':
-                suitedata['error'] += 1
-        else:
-            t = """\t<testcase classname="${testname}" name="${testid}" time="${time}">\n\t</testcase>\n"""
-        suitedata['tests'] += 1
-        xmltests += string.Template(t).substitute(jinfo)
-    data = {'autoid': 'fake',
-            'results': 'tests="%s" errors="%s" failures="%s" ' % (
-                suitedata['tests'], suitedata['errors'], suitedata['failures']),
-            'xmltests': xmltests}
-    suite = string.Template("""<testsuite name="${autoid}" ${results}>\n${xmltests}</testsuite>\n""").substitute(data)
-    xmlreport = """<?xml version="1.0" encoding="UTF-8"?>\n%s""" % suite
-    return xmlreport
+<testsuite tests="1">
+    <testcase classname="src/ChatMessage" name="test/ChatMessageTest"/>
+</testsuite>
